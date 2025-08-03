@@ -518,6 +518,9 @@ function App() {
                   <PlusCircle className="h-5 w-5 text-purple-600" />
                   Registrar Nueva Venta
                 </CardTitle>
+                <p className="text-sm text-gray-600 mt-1">
+                  Registra la venta inicial. Posteriormente podrás marcarla como entregada o devuelta.
+                </p>
               </CardHeader>
               <CardContent>
                 <form onSubmit={crearVenta} className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -563,16 +566,6 @@ function App() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="fecha_entrega">Fecha de Entrega</Label>
-                    <Input
-                      type="date"
-                      value={ventaForm.fecha_entrega}
-                      onChange={(e) => setVentaForm({...ventaForm, fecha_entrega: e.target.value})}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
                     <Label htmlFor="valor_venta">Valor de Venta</Label>
                     <Input
                       type="number"
@@ -584,7 +577,7 @@ function App() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="ganancia">Ganancia</Label>
+                    <Label htmlFor="ganancia">Ganancia Esperada</Label>
                     <Input
                       type="number"
                       value={ventaForm.ganancia}
@@ -594,26 +587,6 @@ function App() {
                     />
                   </div>
 
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      checked={ventaForm.entregado} 
-                      onCheckedChange={(checked) => setVentaForm({...ventaForm, entregado: checked})}
-                    />
-                    <Label>Producto entregado</Label>
-                  </div>
-
-                  {!ventaForm.entregado && (
-                    <div className="space-y-2">
-                      <Label htmlFor="valor_perdida">Valor de Pérdida</Label>
-                      <Input
-                        type="number"
-                        value={ventaForm.valor_perdida}
-                        onChange={(e) => setVentaForm({...ventaForm, valor_perdida: parseFloat(e.target.value) || 0})}
-                        placeholder="Pérdida por devolución"
-                      />
-                    </div>
-                  )}
-
                   <div className="md:col-span-2">
                     <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
                       Registrar Venta
@@ -622,6 +595,138 @@ function App() {
                 </form>
               </CardContent>
             </Card>
+
+            {/* Lista de ventas pendientes */}
+            <Card className="bg-white shadow-sm border border-gray-200">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <Package className="h-5 w-5 text-orange-600" />
+                  Ventas Pendientes ({ventasPendientes.length})
+                </CardTitle>
+                <p className="text-sm text-gray-600 mt-1">
+                  Ventas que aún no han sido marcadas como entregadas o devueltas.
+                </p>
+              </CardHeader>
+              <CardContent>
+                {ventasPendientes.length === 0 ? (
+                  <p className="text-center py-8 text-gray-500">
+                    No hay ventas pendientes por procesar.
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {ventasPendientes.map((venta) => (
+                      <div key={venta.id} className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div>
+                                <p className="font-semibold text-gray-900">{venta.producto}</p>
+                                <p className="text-sm text-gray-600">{venta.cliente_nombre}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">Fecha Venta</p>
+                                <p className="font-semibold">{new Date(venta.fecha_venta).toLocaleDateString()}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">Valor / Ganancia</p>
+                                <p className="font-semibold">${venta.valor_venta.toLocaleString()} / ${venta.ganancia.toLocaleString()}</p>
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            onClick={() => iniciarEdicion(venta)}
+                            size="sm"
+                            className="bg-purple-600 hover:bg-purple-700 ml-4"
+                          >
+                            Procesar
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Modal/Form para editar venta */}
+            {ventaEditando && (
+              <Card className="bg-white shadow-sm border border-purple-200">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <Package className="h-5 w-5 text-purple-600" />
+                    Procesar Venta: {ventaEditando.producto}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={editarVenta} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="fecha_entrega">Fecha de Entrega/Devolución</Label>
+                      <Input
+                        type="date"
+                        value={editForm.fecha_entrega}
+                        onChange={(e) => setEditForm({...editForm, fecha_entrega: e.target.value})}
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Estado del Producto</Label>
+                      <div className="flex gap-4">
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="radio"
+                            name="entregado"
+                            value="true"
+                            checked={editForm.entregado === true}
+                            onChange={() => setEditForm({...editForm, entregado: true, valor_perdida: 0})}
+                            className="text-purple-600"
+                          />
+                          <span className="text-green-600 font-semibold">Entregado</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="radio"
+                            name="entregado"
+                            value="false"
+                            checked={editForm.entregado === false}
+                            onChange={() => setEditForm({...editForm, entregado: false})}
+                            className="text-purple-600"
+                          />
+                          <span className="text-red-600 font-semibold">Devuelto</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {editForm.entregado === false && (
+                      <div className="space-y-2 md:col-span-2">
+                        <Label htmlFor="valor_perdida">Valor de Pérdida por Devolución</Label>
+                        <Input
+                          type="number"
+                          value={editForm.valor_perdida}
+                          onChange={(e) => setEditForm({...editForm, valor_perdida: parseFloat(e.target.value) || 0})}
+                          placeholder="Pérdida por devolución"
+                          className="max-w-xs"
+                        />
+                      </div>
+                    )}
+
+                    <div className="md:col-span-2 flex gap-4">
+                      <Button type="submit" className="bg-purple-600 hover:bg-purple-700">
+                        Guardar Cambios
+                      </Button>
+                      <Button 
+                        type="button"
+                        variant="outline"
+                        onClick={() => setVentaEditando(null)}
+                        className="border-gray-300"
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           {/* Clientes Tab */}
