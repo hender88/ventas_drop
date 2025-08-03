@@ -1,34 +1,150 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+/* Estilos personalizados adicionales */
+.app-container {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+/* Animaciones suaves */
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.App-link {
-    color: #61dafb;
+/* Hover efectos para cards */
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+/* Botones con gradiente suave */
+.btn-gradient {
+  background: linear-gradient(135deg, #875a7b 0%, #7c7bad 100%);
+  transition: all 0.3s ease;
 }
+
+.btn-gradient:hover {
+  background: linear-gradient(135deg, #7a5070 0%, #6f6fa3 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(135, 90, 123, 0.3);
+}
+
+/* Estilo para iconos */
+.icon-purple {
+  color: #875a7b;
+}
+
+.icon-success {
+  color: #10b981;
+}
+
+.icon-danger {
+  color: #ef4444;
+}
+
+.icon-info {
+  color: #3b82f6;
+}
+
+/* Loading spinner personalizado */
+.spinner {
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #875a7b;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Estilos para metricas */
+.metric-card {
+  transition: all 0.2s ease;
+  border: 1px solid #e5e7eb;
+}
+
+.metric-card:hover {
+  border-color: #875a7b;
+  box-shadow: 0 4px 6px -1px rgba(135, 90, 123, 0.1);
+}
+
+/* Estilo para tabs */
+.nav-tabs {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.nav-tab {
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  color: #6b7280;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.nav-tab.active {
+  color: #875a7b;
+  border-bottom-color: #875a7b;
+}
+
+.nav-tab:hover:not(.active) {
+  color: #4b5563;
+  border-bottom-color: #d1d5db;
+}
+
+/* Formularios */
+.form-input {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-input:focus {
+  border-color: #875a7b;
+  box-shadow: 0 0 0 3px rgba(135, 90, 123, 0.1);
+}
+
+/* Charts container */
+.chart-container {
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .chart-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Colores tema Odoo */
+:root {
+  --odoo-primary: #875a7b;
+  --odoo-secondary: #7c7bad;
+  --odoo-success: #10b981;
+  --odoo-danger: #ef4444;
+  --odoo-warning: #f59e0b;
+  --odoo-info: #3b82f6;
+  --odoo-light: #f9fafb;
+  --odoo-dark: #374151;
+  --odoo-border: #e5e7eb;
+}
+
+/* Utilidades de color Odoo */
+.text-odoo-primary { color: var(--odoo-primary); }
+.text-odoo-secondary { color: var(--odoo-secondary); }
+.bg-odoo-primary { background-color: var(--odoo-primary); }
+.bg-odoo-secondary { background-color: var(--odoo-secondary); }
+.border-odoo-primary { border-color: var(--odoo-primary); }
