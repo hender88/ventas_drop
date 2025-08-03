@@ -1,16 +1,17 @@
 import requests
 import sys
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import json
+from typing import Dict, Any, Optional
 
 class ControlGastosAPITester:
     def __init__(self, base_url="https://ee0ade8f-ba28-4446-b75e-f095aaecddbf.preview.emergentagent.com"):
-        self.base_url = base_url
+        self.base_url = base_url.rstrip('/')
         self.tests_run = 0
         self.tests_passed = 0
         self.test_results = []
 
-    def run_test(self, name, method, endpoint, expected_status, data=None, headers=None):
+    def run_test(self, name, method, endpoint, expected_status, data=None, headers=None, params=None):
         """Run a single API test"""
         url = f"{self.base_url}/{endpoint}"
         if headers is None:
@@ -19,10 +20,12 @@ class ControlGastosAPITester:
         self.tests_run += 1
         print(f"\n🔍 Testing {name}...")
         print(f"   URL: {url}")
+        if params:
+            print(f"   Params: {params}")
         
         try:
             if method == 'GET':
-                response = requests.get(url, headers=headers, timeout=10)
+                response = requests.get(url, headers=headers, params=params, timeout=10)
             elif method == 'POST':
                 response = requests.post(url, json=data, headers=headers, timeout=10)
             elif method == 'PUT':
