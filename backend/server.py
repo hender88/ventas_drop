@@ -252,6 +252,10 @@ async def listar_clientes():
 async def listar_ventas():
     """Obtener lista de ventas"""
     ventas = await db.ventas.find({}).to_list(length=None)
+    # Convert ObjectId to string for JSON serialization
+    for venta in ventas:
+        if '_id' in venta:
+            del venta['_id']
     return ventas
 
 @app.get("/api/gastos")
