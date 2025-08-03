@@ -92,24 +92,32 @@ async def crear_datos_demo():
     productos = ["Producto A", "Producto B", "Producto C", "Producto D", "Producto E"]
     
     ventas_demo = []
-    for i in range(25):  # 25 ventas de ejemplo
+    for i in range(30):  # 30 ventas de ejemplo
         fecha_venta = datetime.now().date() - timedelta(days=random.randint(0, 30))
-        fecha_entrega = fecha_venta + timedelta(days=random.randint(1, 7))
         
         valor_venta = round(random.uniform(50000, 500000), 2)
         ganancia = round(valor_venta * random.uniform(0.2, 0.4), 2)
-        entregado = random.choice([True, True, True, False])  # 75% entregados
-        valor_perdida = round(random.uniform(10000, 50000), 2) if not entregado else 0
+        
+        # 40% pendientes (null), 40% entregados (True), 20% devueltos (False)
+        estado_random = random.choice([None, None, None, None, True, True, True, True, False, False])
+        
+        fecha_entrega = None
+        valor_perdida = 0
+        
+        if estado_random is not None:  # Si no está pendiente
+            fecha_entrega = fecha_venta + timedelta(days=random.randint(1, 7))
+            if estado_random == False:  # Si fue devuelto
+                valor_perdida = round(random.uniform(10000, 50000), 2)
         
         venta = {
             "id": str(uuid.uuid4()),
             "cliente_id": random.choice(clientes_demo)["id"],
             "producto": random.choice(productos),
             "fecha_venta": fecha_venta.isoformat(),
-            "fecha_entrega": fecha_entrega.isoformat(),
+            "fecha_entrega": fecha_entrega.isoformat() if fecha_entrega else None,
             "valor_venta": valor_venta,
             "ganancia": ganancia,
-            "entregado": entregado,
+            "entregado": estado_random,
             "valor_perdida": valor_perdida
         }
         ventas_demo.append(venta)
