@@ -157,37 +157,87 @@ async def root():
     return {"message": "Sistema de Control de Gastos y Ganancias API"}
 
 @app.get("/api/dashboard", response_model=EstadisticasResponse)
-async def get_dashboard():
-    """Obtener estadísticas del dashboard"""
+async def get_dashboard(fecha_inicio: Optional[str] = None, fecha_final: Optional[str] = None):
+    """Obtener estadísticas del dashboard con filtros opcionales de fecha"""
     from datetime import datetime, timedelta
     
-    # Obtener todas las ventas
-    ventas = await db.ventas.find({}).to_list(length=None)
-    gastos = await db.gastos.find({}).to_list(length=None)
+    # Configurar filtros de fecha
+    filtro_fecha = {}
+    if fecha_inicio and fecha_final:
+        try:
+            fecha_inicio_dt = datetime.fromisoformat(fecha_inicio).date()
+            fecha_final_dt = datetime.fromisoformat(fecha_final).date()
+            filtro_fecha = {
+                "fecha_venta": {
+                    "$gte": fecha_inicio_dt.isoformat(),
+                    "$lte": fecha_final_dt.isoformat()
+                }
+            }
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Formato de fecha inválido. Use YYYY-MM-DD")
+    
+    # Obtener ventas con filtro de fecha
+    ventas = await db.ventas.find(filtro_fecha).to_list(length=None)
+    
+    # Obtener gastos con filtro de fecha (si aplica)
+    filtro_gastos = {}
+    if fecha_inicio and fecha_final:
+        try:
+            filtro_gastos = {
+                "$or": [
+                    {
+                        "fecha_inicio": {
+                            "$gte": fecha_inicio_dt.isoformat(),
+                            "$lte": fecha_final_dt.isoformat()
+                        }
+                    },
+                    {
+                        "fecha_final": {
+                            "$gte": fecha_inicio_dt.isoformat(),
+                            "$lte": fecha_final_dt.isoformat()
+                        }
+                    }
+                ]
+            }
+        except:
+            pass
+    
+    gastos = await db.gastos.find(filtro_gastos).to_list(length=None)
     
     # Calcular métricas
-    ganancias_totales = sum(v["ganancia"] for v in ventas if v["entregado"])
-    perdidas_totales = sum(v["valor_perdida"] for v in ventas if not v["entregado"])
+    ganancias_totales = sum(v["ganancia"] for v in ventas if v.get("entregado") == True)
+    perdidas_totales = sum(v.get("valor_perdida", 0) for v in ventas if v.get("entregado") == False)
     inversion_publicidad = sum(g["valor"] for g in gastos)
-    productos_vendidos = len([v for v in ventas if v["entregado"]])
-    productos_devueltos = len([v for v in ventas if not v["entregado"]])
+    productos_vendidos = len([v for v in ventas if v.get("entregado") == True])
+    productos_devueltos = len([v for v in ventas if v.get("entregado") == False])
     
-    # Ventas por día (últimos 7 días)
+    # Ventas por día (últimos 7 días o período seleccionado)
     ventas_por_dia = []
-    for i in range(7):
-        fecha = datetime.now().date() - timedelta(days=i)
-        ventas_dia = len([v for v in ventas if v["fecha_venta"] == fecha.isoformat() and v["entregado"]])
-        ventas_por_dia.append({
-            "fecha": fecha.isoformat(),
-            "ventas": ventas_dia
-        })
-    
-    ventas_por_dia.reverse()
+    if fecha_inicio and fecha_final:
+        # Usar rango seleccionado
+        current_date = fecha_inicio_dt
+        while current_date <= fecha_final_dt:
+            ventas_dia = len([v for v in ventas if v["fecha_venta"] == current_date.isoformat() and v.get("entregado") == True])
+            ventas_por_dia.append({
+                "fecha": current_date.isoformat(),
+                "ventas": ventas_dia
+            })
+            current_date += timedelta(days=1)
+    else:
+        # Últimos 7 días por defecto
+        for i in range(7):
+            fecha = datetime.now().date() - timedelta(days=i)
+            ventas_dia = len([v for v in ventas if v["fecha_venta"] == fecha.isoformat() and v.get("entregado") == True])
+            ventas_por_dia.append({
+                "fecha": fecha.isoformat(),
+                "ventas": ventas_dia
+            })
+        ventas_por_dia.reverse()
     
     # Ganancias por producto
     productos = {}
     for venta in ventas:
-        if venta["entregado"]:
+        if venta.get("entregado") == True:
             if venta["producto"] not in productos:
                 productos[venta["producto"]] = 0
             productos[venta["producto"]] += venta["ganancia"]
