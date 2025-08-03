@@ -96,18 +96,48 @@ function App() {
   const cargarDatos = async () => {
     try {
       setLoading(true);
-      const [dashboardRes, clientesRes] = await Promise.all([
-        axios.get(`${BACKEND_URL}/api/dashboard`),
-        axios.get(`${BACKEND_URL}/api/clientes`)
+      
+      // Construir URL del dashboard con filtros de fecha
+      let dashboardUrl = `${BACKEND_URL}/api/dashboard`;
+      const params = new URLSearchParams();
+      
+      if (fechaInicio && fechaFinal) {
+        params.append('fecha_inicio', fechaInicio);
+        params.append('fecha_final', fechaFinal);
+        dashboardUrl += `?${params.toString()}`;
+      }
+      
+      const [dashboardRes, clientesRes, ventasPendientesRes] = await Promise.all([
+        axios.get(dashboardUrl),
+        axios.get(`${BACKEND_URL}/api/clientes`),
+        axios.get(`${BACKEND_URL}/api/ventas/pendientes`)
       ]);
       
       setDashboardData(dashboardRes.data);
       setClientes(clientesRes.data);
+      setVentasPendientes(ventasPendientesRes.data);
     } catch (error) {
       console.error('Error cargando datos:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const aplicarFiltrosFecha = () => {
+    if (fechaInicio && fechaFinal) {
+      cargarDatos();
+    } else {
+      alert('Por favor selecciona ambas fechas');
+    }
+  };
+
+  const limpiarFiltros = () => {
+    setFechaInicio('');
+    setFechaFinal('');
+    // Recargar datos sin filtros
+    setTimeout(() => {
+      cargarDatos();
+    }, 100);
   };
 
   const crearVenta = async (e) => {
