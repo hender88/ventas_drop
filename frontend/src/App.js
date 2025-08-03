@@ -51,19 +51,21 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 function App() {
   const [dashboardData, setDashboardData] = useState(null);
   const [clientes, setClientes] = useState([]);
+  const [ventasPendientes, setVentasPendientes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
+
+  // Estados para filtros de fecha
+  const [fechaInicio, setFechaInicio] = useState('');
+  const [fechaFinal, setFechaFinal] = useState('');
 
   // Estados para formularios
   const [ventaForm, setVentaForm] = useState({
     cliente_id: '',
     producto: '',
     fecha_venta: '',
-    fecha_entrega: '',
     valor_venta: '',
-    ganancia: '',
-    entregado: true,
-    valor_perdida: 0
+    ganancia: ''
   });
 
   const [clienteForm, setClienteForm] = useState({
@@ -77,6 +79,14 @@ function App() {
     valor: '',
     fecha_inicio: '',
     fecha_final: ''
+  });
+
+  // Estado para edición de ventas
+  const [ventaEditando, setVentaEditando] = useState(null);
+  const [editForm, setEditForm] = useState({
+    fecha_entrega: '',
+    entregado: null,
+    valor_perdida: 0
   });
 
   useEffect(() => {
