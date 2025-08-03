@@ -149,17 +149,41 @@ function App() {
         cliente_id: '',
         producto: '',
         fecha_venta: '',
-        fecha_entrega: '',
         valor_venta: '',
-        ganancia: '',
-        entregado: true,
-        valor_perdida: 0
+        ganancia: ''
       });
       cargarDatos();
     } catch (error) {
       console.error('Error creando venta:', error);
       alert('Error al crear venta');
     }
+  };
+
+  const editarVenta = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.put(`${BACKEND_URL}/api/ventas/${ventaEditando.id}`, editForm);
+      alert('Venta actualizada exitosamente');
+      setVentaEditando(null);
+      setEditForm({
+        fecha_entrega: '',
+        entregado: null,
+        valor_perdida: 0
+      });
+      cargarDatos();
+    } catch (error) {
+      console.error('Error actualizando venta:', error);
+      alert('Error al actualizar venta');
+    }
+  };
+
+  const iniciarEdicion = (venta) => {
+    setVentaEditando(venta);
+    setEditForm({
+      fecha_entrega: venta.fecha_entrega || '',
+      entregado: venta.entregado,
+      valor_perdida: venta.valor_perdida || 0
+    });
   };
 
   const crearCliente = async (e) => {
