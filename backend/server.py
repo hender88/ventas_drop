@@ -262,6 +262,10 @@ async def listar_ventas():
 async def listar_gastos():
     """Obtener lista de gastos"""
     gastos = await db.gastos.find({}).to_list(length=None)
+    # Convert ObjectId to string for JSON serialization
+    for gasto in gastos:
+        if '_id' in gasto:
+            del gasto['_id']
     return gastos
 
 if __name__ == "__main__":
