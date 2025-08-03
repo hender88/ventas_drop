@@ -258,16 +258,56 @@ async def get_dashboard(fecha_inicio: Optional[str] = None, fecha_final: Optiona
 
 @app.post("/api/ventas")
 async def crear_venta(venta: Venta):
-    """Crear nueva venta"""
+    """Crear nueva venta (inicialmente sin estado de entrega)"""
     venta.id = str(uuid.uuid4())
     venta_dict = venta.dict()
     venta_dict["fecha_venta"] = venta.fecha_venta.isoformat()
-    venta_dict["fecha_entrega"] = venta.fecha_entrega.isoformat()
+    if venta.fecha_entrega:
+        venta_dict["fecha_entrega"] = venta.fecha_entrega.isoformat()
     
     result = await db.ventas.insert_one(venta_dict)
     if result.inserted_id:
         return {"message": "Venta creada exitosamente", "id": venta.id}
     raise HTTPException(status_code=400, detail="Error al crear venta")
+
+@app.put("/api/ventas/{venta_id}")
+async def actualizar_venta(venta_id: str, venta_update: VentaUpdate):
+    """Actualizar estado de entrega de una venta"""
+    update_dict = {}
+    
+    if venta_update.fecha_entrega:
+        update_dict["fecha_entrega"] = venta_update.fecha_entrega.isoformat()
+    
+    if venta_update.entregado is not None:
+        update_dict["entregado"] = venta_update.entregado
+    
+    if venta_update.valor_perdida is not None:
+        update_dict["valor_perdida"] = venta_update.valor_perdida
+    
+    result = await db.ventas.update_one(
+        {"id": venta_id}, 
+        {"$set": update_dict}
+    )
+    
+    if result.matched_count:
+        return {"message": "Venta actualizada exitosamente"}
+    raise HTTPException(status_code=404, detail="Venta no encontrada")
+
+@app.get("/api/ventas/pendientes")
+async def listar_ventas_pendientes():
+    """Obtener ventas sin estado definido (pendientes de procesamiento)"""
+    ventas_pendientes = await db.ventas.find({"entregado": None}).to_list(length=None)
+    
+    # Get client names for better display
+    clientes = await db.clientes.find({}).to_list(length=None)
+    clientes_dict = {c["id"]: f"{c['nombre']} {c['apellidos']}" for c in clientes}
+    
+    for venta in ventas_pendientes:
+        if '_id' in venta:
+            del venta['_id']
+        venta['cliente_nombre'] = clientes_dict.get(venta['cliente_id'], 'Cliente no encontrado')
+    
+    return ventas_pendientes
 
 @app.post("/api/clientes")
 async def crear_cliente(cliente: Cliente):
