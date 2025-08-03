@@ -335,6 +335,59 @@ function App() {
 
           {/* Dashboard Tab */}
           <TabsContent value="dashboard" className="space-y-6">
+            {/* Filtros de fecha */}
+            <Card className="bg-white shadow-sm border border-gray-200">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-purple-600" />
+                  Filtros de Fecha
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                  <div className="space-y-2">
+                    <Label htmlFor="fecha_inicio">Fecha Inicial</Label>
+                    <Input
+                      type="date"
+                      value={fechaInicio}
+                      onChange={(e) => setFechaInicio(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="fecha_final">Fecha Final</Label>
+                    <Input
+                      type="date"
+                      value={fechaFinal}
+                      onChange={(e) => setFechaFinal(e.target.value)}
+                    />
+                  </div>
+                  
+                  <Button 
+                    onClick={aplicarFiltrosFecha}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    Aplicar Filtros
+                  </Button>
+                  
+                  <Button 
+                    onClick={limpiarFiltros}
+                    variant="outline"
+                    className="border-gray-300"
+                  >
+                    Limpiar Filtros
+                  </Button>
+                </div>
+                
+                {fechaInicio && fechaFinal && (
+                  <div className="mt-4 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                    <p className="text-sm text-purple-800">
+                      Mostrando datos desde <strong>{fechaInicio}</strong> hasta <strong>{fechaFinal}</strong>
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
             {/* Métricas principales */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
               <Card className="bg-white shadow-sm border border-gray-200">
