@@ -39,10 +39,15 @@ class Venta(BaseModel):
     cliente_id: str
     producto: str
     fecha_venta: date
-    fecha_entrega: date
+    fecha_entrega: Optional[date] = None
     valor_venta: float
     ganancia: float
-    entregado: bool
+    entregado: Optional[bool] = None  # null = pendiente, True = entregado, False = devuelto
+    valor_perdida: Optional[float] = 0
+
+class VentaUpdate(BaseModel):
+    fecha_entrega: Optional[date] = None
+    entregado: Optional[bool] = None
     valor_perdida: Optional[float] = 0
 
 class Gasto(BaseModel):
